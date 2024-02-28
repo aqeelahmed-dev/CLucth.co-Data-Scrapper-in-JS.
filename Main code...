@@ -1,0 +1,46 @@
+// Example: Scraping data from multiple classes and converting to CSV
+var titles = document.querySelectorAll('.company_title');
+var ratings = document.querySelectorAll('.sg-rating__number');
+var links = document.querySelectorAll('.website-link__item');
+
+var data = [];
+
+// Iterate through each element and extract the data
+for (var i = 0; i < titles.length; i++) {
+    var title = titles[i].textContent.trim();
+    var rating = ratings[i].textContent.trim();
+    var fullLink = links[i].getAttribute('href');
+
+    // Extract only the base URL without irrelevant queries
+    var url = new URL(fullLink);
+    url.search = ''; // Remove query parameters
+    var cleanLink = url.toString();
+
+    // Store the data in an array
+    var rowData = [title, rating, cleanLink];
+
+    // Push the data into the main array
+    data.push(rowData);
+}
+
+// Convert the data array to CSV format
+var csvContent = "data:text/csv;charset=utf-8,";
+
+data.forEach(function (row) {
+    var rowString = row.map(function (cell) {
+        return '"' + cell.replace(/"/g, '""') + '"';
+    }).join(',');
+
+    csvContent += rowString + '\r\n';
+});
+
+// Create a Blob object and generate a download link
+var blob = new Blob([csvContent], { type: 'text/csv' });
+var link = document.createElement('a');
+link.href = window.URL.createObjectURL(blob);
+link.download = 'scraped_data.csv';
+
+// Append the link to the document and programmatically trigger the download
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
